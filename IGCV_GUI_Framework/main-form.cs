@@ -15,17 +15,16 @@ namespace IGCV_GUI_Framework
 {
     public class MainForm : Form
     {
+        // Window size constants
+        private const int WINDOW_WIDTH = 1200;
+        private const int WINDOW_HEIGHT = 800;
         // Main UI components
         private ThemedFooterBar _footerBar;
         private StatusPanel _statusPanel;
         private PageContainer _pageContainer;
-        private ThemedNavigationMenu _topMenu;
 
         // Pages collection
         private List<IModulePage> _pages = new List<IModulePage>();
-
-        // Printer controller
-        private IPrinterController _printerController;
 
         // Current active page index
         private int _currentPageIndex = 0;
@@ -61,13 +60,7 @@ namespace IGCV_GUI_Framework
             _pageContainer = new PageContainer();
             _pageContainer.Dock = DockStyle.Fill;
             
-            // Create top menu
-            _topMenu = new ThemedNavigationMenu();
-            _topMenu.Height = 40;
-            _topMenu.Dock = DockStyle.Top;
-            _topMenu.MenuBackColor = Color.FromArgb(235, 235, 235);
-            _topMenu.BorderWidth = 0;
-            _topMenu.MenuItemSelected += TopMenu_MenuItemSelected;
+            // Top menu removed as requested
             
             // Create footer bar
             _footerBar = new ThemedFooterBar();
@@ -82,10 +75,10 @@ namespace IGCV_GUI_Framework
             
             this.Controls.Add(_pageContainer);
             this.Controls.Add(_statusPanel);
-            this.Controls.Add(_topMenu);
             this.Controls.Add(_footerBar);
             
             // Form properties
+            this.Size = new Size(WINDOW_WIDTH, WINDOW_HEIGHT);
             this.MinimumSize = new Size(800, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Text = "IGCV GUI Framework Demo";
@@ -97,35 +90,22 @@ namespace IGCV_GUI_Framework
 
         private void InitializePages()
         {
-            // Create printer controller
-            _printerController = new SamplePrinterController();
-
-            // Set printer controller to status panel
-            _statusPanel.SetPrinterController(_printerController);
-
             Bitmap placeholderImage = new Bitmap(100, 100);
             using (Graphics g = Graphics.FromImage(placeholderImage))
             {
                 g.Clear(Color.FromArgb(0, 103, 172)); // Fraunhofer blue
             }
 
-            // Create all pages including main menu
-            _pages.Add(new MainMenuPage());  // First page is main menu
-            _pages.Add(new AxesPage(_printerController));
-            _pages.Add(new SamplePage("Actuators", "Manipulate actuators and send basic commands", "Actuators",
-                                    placeholderImage, 2));
-            _pages.Add(new SamplePage("Test", "Automation via Python Code", "Test",
-                                    placeholderImage, 3));
-            _pages.Add(new SamplePage("Vision", "Get sensor data and camera controls", "Vision",
-                                    placeholderImage, 4));
+            // Create all pages with Controls demos distributed across specialized pages
+            _pages.Add(new ButtonControlsPage());       // Button controls demo
+            _pages.Add(new InputControlsPage());        // Input controls demo
+            _pages.Add(new ProgressControlsPage());     // Progress indicators demo
+            _pages.Add(new LayoutControlsPage());       // Layout capabilities demo
 
-            // Set navigation menu items
-            _topMenu.SetMenuItems(new[] { "Demo Launcher", "Controls Demo", "Integration Demo" });
-            
             // Set footer navigation buttons
             _footerBar.SetNavigationButtons(_pages.Select(p => p.NavigationName));
 
-            // Start with main menu
+            // Start with first page
             ShowPage(0);
         }
 
@@ -146,22 +126,7 @@ namespace IGCV_GUI_Framework
             ShowPage(pageIndex);
         }
         
-        private void TopMenu_MenuItemSelected(object sender, int index)
-        {
-            // Handle top menu item selections
-            switch (index)
-            {
-                case 0: // Demo Launcher
-                    ShowPage(0); // Main menu/demo launcher
-                    break;
-                case 1: // Controls Demo
-                    ShowPage(1); // Axes page as control demo
-                    break;
-                case 2: // Integration Demo
-                    ShowPage(2); // Actuators page as integration demo
-                    break;
-            }
-        }
+        // TopMenu_MenuItemSelected method removed as the top menu has been removed
 
         /// <summary>
         /// Shows the specified page
@@ -179,10 +144,7 @@ namespace IGCV_GUI_Framework
             // Update navigation indicators
             _footerBar.ActiveButtonIndex = pageIndex;
             
-            // Update top menu selection based on page
-            if (pageIndex == 0) _topMenu.ActiveButtonIndex = 0;
-            else if (pageIndex == 1) _topMenu.ActiveButtonIndex = 1;
-            else if (pageIndex >= 2) _topMenu.ActiveButtonIndex = 2;
+            // Top menu selection update removed
         }
 
         /// <summary>
@@ -197,41 +159,6 @@ namespace IGCV_GUI_Framework
             {
                 _pageContainer.RefreshHeader();
             }
-        }
-    }
-
-    /// <summary>
-    /// Sample implementation of a printer controller
-    /// In a real application, this would be implemented to communicate with the actual printer
-    /// </summary>
-    public class SamplePrinterController : IPrinterController
-    {
-        public bool IsConnected { get; private set; } = false;
-
-        public event EventHandler<bool> ConnectionStatusChanged;
-
-        public string ModelName => "Fraunhofer SBP-2000";
-
-        public string SerialNumber => "SBP2000-0001";
-
-        public void Connect()
-        {
-            // Simulate connecting to printer
-            IsConnected = true;
-            ConnectionStatusChanged?.Invoke(this, IsConnected);
-        }
-
-        public void Disconnect()
-        {
-            // Simulate disconnecting from printer
-            IsConnected = false;
-            ConnectionStatusChanged?.Invoke(this, IsConnected);
-        }
-
-        public void SendCommand(string command)
-        {
-            // Simulate sending command to printer
-            Console.WriteLine($"Sending command: {command}");
         }
     }
 }

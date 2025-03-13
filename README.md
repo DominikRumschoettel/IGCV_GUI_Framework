@@ -14,7 +14,7 @@ The IGCV GUI Framework provides a robust, theming-capable user interface toolkit
 - **Fraunhofer corporate identity**: Colors, fonts, and styles matching Fraunhofer CI guidelines
 - **Multiple theme support**: Support for different visual themes with easy switching
 - **Robust error handling**: Graceful fallbacks for missing resources or fonts
-- **Demo applications**: Sample applications showcasing framework capabilities
+- **Demo applications**: Comprehensive control demo pages showcasing all themed controls
 
 ## Documentation
 
@@ -22,6 +22,7 @@ Comprehensive documentation is available in the `docs` directory:
 
 - [User Guide](docs/USER_GUIDE.md) - Practical guide for developers using the framework
 - [Architecture Overview](docs/ARCHITECTURE.md) - Technical details of the framework architecture
+- [Demo Controls Guide](docs/DEMO_CONTROLS.md) - Guide to the control demonstration pages
 - [LLM Developer Guide](docs/LLM_DEVELOPER_GUIDE.md) - Detailed guide for Language Model-based development
 
 ## Getting Started
@@ -49,10 +50,16 @@ Comprehensive documentation is available in the `docs` directory:
    dotnet build
    ```
 
-4. Run the demo application:
+4. Run the demo application to explore the controls:
    ```
    dotnet run --project IGCV_GUI_Framework/IGCV_GUI_Framework.csproj
    ```
+
+   The demo application will open with a window size of 1200x800 pixels and display several pages showcasing different themed controls:
+   - Button Controls - Various button styles and usage examples
+   - Input Controls - Text inputs, dropdowns, and selection controls
+   - Progress Controls - Progress bars and step indicators
+   - Layout Controls - Panel layouts, cards, and dashboard examples
 
 ## Project Structure
 
@@ -67,10 +74,6 @@ IGCV_GUI_Framework/
 │   │   │   ├── ThemedPanel.cs
 │   │   │   ├── ThemedTextBox.cs
 │   │   │   └── ... (other controls)
-│   │   ├── Demo/                   # Demo applications
-│   │   │   ├── ControlsDemoForm.cs
-│   │   │   ├── DemoLauncher.cs
-│   │   │   └── ThemeIntegrationSample.cs
 │   │   ├── IThemeableControl.cs    # Interface for themeable controls
 │   │   ├── Themes/                 # Theme management
 │   │       ├── ITheme.cs           # Theme interface
@@ -90,9 +93,10 @@ IGCV_GUI_Framework/
 │   └── interfaces.cs
 └── Pages/                          # Application pages
     ├── page-base.cs                # Base page implementation
-    ├── main-menu-page.cs           # Main menu example
-    ├── axes-page.cs                # Example page
-    └── sample-page.cs              # Example page
+    ├── ButtonControlsPage.cs       # Button controls demo page
+    ├── InputControlsPage.cs        # Input controls demo page
+    ├── ProgressControlsPage.cs     # Progress indicators demo page
+    └── LayoutControlsPage.cs       # Layout controls demo page
 ```
 
 ## Usage

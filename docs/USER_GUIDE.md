@@ -5,6 +5,7 @@ This guide provides a practical introduction to using the IGCV GUI Framework for
 ## Related Documentation
 - [README](../README.md) - Main project documentation and quick start
 - [Architecture Overview](ARCHITECTURE.md) - Technical details of the framework architecture
+- [Demo Controls Guide](DEMO_CONTROLS.md) - Guide to the control demonstration pages
 - [LLM Developer Guide](LLM_DEVELOPER_GUIDE.md) - Detailed guide for Language Model-based development
 
 ## Getting Started
@@ -582,9 +583,10 @@ To create a custom themed control:
 
 The IGCV GUI Framework provides a powerful foundation for creating visually consistent Windows Forms applications with the Fraunhofer corporate identity. By using the themed controls and following the page-based architecture, you can rapidly develop professional-looking applications.
 
+The framework includes a comprehensive set of demo pages that showcase all available controls and layout patterns. These demos serve as practical examples you can study and adapt for your own applications.
+
 For more detailed information, refer to:
 - [README](../README.md) - Main project documentation and quick start
 - [Architecture Overview](ARCHITECTURE.md) - Technical details of the framework architecture
+- [Demo Controls Guide](DEMO_CONTROLS.md) - Guide to the control demonstration pages
 - [LLM Developer Guide](LLM_DEVELOPER_GUIDE.md) - Comprehensive guide for Language Model-based development
-
-You can also explore the demo applications in the source code for practical examples.
