@@ -1,76 +1,219 @@
 # IGCV GUI Framework
 
-A GUI framework for creating themed Windows Forms applications with Fraunhofer corporate identity.
+A comprehensive GUI framework for creating themed Windows Forms applications with Fraunhofer corporate identity support.
 
 ## Overview
 
-The IGCV GUI Framework provides a theming-capable user interface toolkit for Windows Forms applications. It enables developers to create applications with consistent visual styling while supporting multiple themes, with a primary focus on the Fraunhofer Corporate Identity theme.
+The IGCV GUI Framework provides a robust, theming-capable user interface toolkit for Windows Forms applications. It enables developers to create applications with consistent visual styling while supporting multiple themes, with a primary focus on the Fraunhofer Corporate Identity theme.
 
-## Features
+## Key Features
 
 - **Theme-based architecture**: All visual elements follow a consistent theme
-- **Compile-time theme selection**: Themes are selected at compile time for optimal performance
-- **Fraunhofer Corporate Identity integration**: Colors, fonts, and styles matching Fraunhofer CI guidelines
-- **Custom themed controls**: Enhanced versions of standard controls with additional styling capabilities
-- **Theme extensibility**: Easily add new themes by extending base classes
-- **Error resilience**: Graceful fallbacks for missing fonts or resources
-- **Demo applications**: Sample forms showcasing the framework's capabilities
+- **Custom themed controls**: Enhanced versions of standard controls with additional styling capabilities 
+- **Themeable controls**: Comprehensive support for common UI controls with proper theming
+- **Fraunhofer corporate identity**: Colors, fonts, and styles matching Fraunhofer CI guidelines
+- **Multiple theme support**: Support for different visual themes with easy switching
+- **Robust error handling**: Graceful fallbacks for missing resources or fonts
+- **Demo applications**: Sample applications showcasing framework capabilities
+
+## Documentation
+
+Comprehensive documentation is available in the `docs` directory:
+
+- [User Guide](docs/USER_GUIDE.md) - Practical guide for developers using the framework
+- [Architecture Overview](docs/ARCHITECTURE.md) - Technical details of the framework architecture
+- [LLM Developer Guide](docs/LLM_DEVELOPER_GUIDE.md) - Detailed guide for Language Model-based development
 
 ## Getting Started
 
-1. Clone this repository
-2. Open the solution file in Visual Studio
-3. Build and run the demo launcher
+### Prerequisites
+
+- Visual Studio 2022 or later
+- .NET 8.0 or later
+- Windows operating system
+
+### Installation
+
+1. Clone this repository:
+   ```
+   git clone https://github.com/fraunhofer-igcv/IGCV_GUI_Framework.git
+   ```
+
+2. Open the solution file in Visual Studio:
+   ```
+   IGCV_GUI_Framework.sln
+   ```
+
+3. Build the solution:
+   ```
+   dotnet build
+   ```
+
+4. Run the demo application:
+   ```
+   dotnet run --project IGCV_GUI_Framework/IGCV_GUI_Framework.csproj
+   ```
 
 ## Project Structure
 
+The framework follows a modular architecture:
+
 ```
-IGCV/
-├── GUI/
-│   ├── Controls/               # Themed control implementations
-│   ├── Themes/                 # Theme definitions and management
-│   │   ├── FraunhoferCI/       # Fraunhofer corporate identity theme
-│   │   ├── DarkTheme/          # Dark theme example
-│   └── Demo/                   # Demo forms showcasing the framework
+IGCV_GUI_Framework/
+├── IGCV/
+│   ├── GUI/
+│   │   ├── Controls/               # Themed control implementations
+│   │   │   ├── ThemedButton.cs
+│   │   │   ├── ThemedPanel.cs
+│   │   │   ├── ThemedTextBox.cs
+│   │   │   └── ... (other controls)
+│   │   ├── Demo/                   # Demo applications
+│   │   │   ├── ControlsDemoForm.cs
+│   │   │   ├── DemoLauncher.cs
+│   │   │   └── ThemeIntegrationSample.cs
+│   │   ├── IThemeableControl.cs    # Interface for themeable controls
+│   │   ├── Themes/                 # Theme management
+│   │       ├── ITheme.cs           # Theme interface
+│   │       ├── ThemeBase.cs        # Base theme implementation
+│   │       ├── ThemeManager.cs     # Theme management
+│   │       ├── FraunhoferCI/       # Fraunhofer theme
+│   │       │   └── FraunhoferTheme.cs
+│   │       └── DarkTheme/          # Dark theme example
+│   │           └── DarkTheme.cs
+├── Common/                         # Common utilities
+│   ├── Controls/                   # Application-level controls
+│   │   ├── navigation-bar.cs
+│   │   ├── page-container.cs
+│   │   └── status-panel.cs
+│   └── FraunhoferTheme.cs          # Legacy theme (for compatibility)
+├── Interfaces/                     # Application interfaces
+│   └── interfaces.cs
+└── Pages/                          # Application pages
+    ├── page-base.cs                # Base page implementation
+    ├── main-menu-page.cs           # Main menu example
+    ├── axes-page.cs                # Example page
+    └── sample-page.cs              # Example page
 ```
 
 ## Usage
 
-### Applying Themes
+### Using the Framework in Your Application
+
+1. Reference the IGCV_GUI_Framework project or assembly in your application.
+
+2. Initialize theming in your application:
 
 ```csharp
-// Apply the current theme to a form
-ThemeManager.ApplyThemeToContainer(this);
+using IGCV.GUI.Themes;
 
-// Apply a specific theme
-ThemeManager.SetTheme("Dark Theme");
+// In your application startup, e.g., Program.cs or Form_Load
+ThemeManager.SetTheme("Fraunhofer CI"); // Or any other registered theme
+```
+
+3. Apply themes to your forms:
+
+```csharp
+// In your form constructor or Load event
 ThemeManager.ApplyThemeToContainer(this);
 ```
 
 ### Using Themed Controls
 
 ```csharp
-// Create a primary button
+using IGCV.GUI.Controls;
+
+// Create a themed button with primary style
 ThemedButton primaryButton = new ThemedButton
 {
-    Text = "Primary Button",
+    Text = "Primary Action",
     ButtonStyle = ButtonStyle.Primary,
-    Location = new Point(10, 10),
+    Location = new Point(20, 20),
     Size = new Size(150, 40)
 };
+this.Controls.Add(primaryButton);
+
+// Create a themed panel
+ThemedPanel panel = new ThemedPanel
+{
+    Location = new Point(20, 70),
+    Size = new Size(300, 200),
+    BorderColor = ThemeManager.CurrentTheme.BorderColor,
+    BorderWidth = 1,
+    CornerRadius = ThemeManager.CurrentTheme.CornerRadius
+};
+this.Controls.Add(panel);
 ```
 
-## Demo Applications
+### Creating a Custom Theme
 
-The framework includes several demo applications:
+1. Create a new class that inherits from `ThemeBase`:
 
-1. **Controls Demo**: Showcases all themed controls with different styles
-2. **Theme Integration Sample**: Demonstrates a realistic application layout 
-3. **Demo Launcher**: Central hub for accessing all demos
+```csharp
+using IGCV.GUI.Themes;
+using System.Drawing;
+
+public class MyCustomTheme : ThemeBase
+{
+    #region Singleton
+
+    private static MyCustomTheme _instance;
+    public static MyCustomTheme Instance => _instance ?? (_instance = new MyCustomTheme());
+
+    private MyCustomTheme() { }
+
+    #endregion
+
+    // Implement required properties
+    public override string Name => "My Custom Theme";
+    public override Color PrimaryColor => Color.FromArgb(0, 120, 215);
+    public override Color SecondaryColor => Color.FromArgb(230, 230, 230);
+    public override Color AccentColor => Color.FromArgb(255, 140, 0);
+    public override Color BackgroundColor => Color.White;
+    public override Color TextOnLightColor => Color.Black;
+    public override Color TextOnDarkColor => Color.White;
+    public override Color SuccessColor => Color.Green;
+    public override Color WarningColor => Color.Orange;
+    public override Color ErrorColor => Color.Red;
+    public override Color BorderColor => Color.LightGray;
+
+    // Font properties
+    public override Font HeaderFont => new Font("Segoe UI", 16f, FontStyle.Bold);
+    public override Font SubHeaderFont => new Font("Segoe UI", 14f, FontStyle.Regular);
+    public override Font BodyFont => new Font("Segoe UI", 10f, FontStyle.Regular);
+    public override Font ButtonFont => new Font("Segoe UI", 10f, FontStyle.Regular);
+    public override Font SmallFont => new Font("Segoe UI", 8f, FontStyle.Regular);
+
+    // Shape properties
+    public override int CornerRadius => 3;
+    public override int BorderWidth => 1;
+
+    // Override styling methods as needed
+}
+```
+
+2. Register your theme with the `ThemeManager`:
+
+```csharp
+ThemeManager.RegisterTheme(MyCustomTheme.Instance);
+ThemeManager.SetTheme("My Custom Theme");
+```
+
+For more detailed usage instructions and examples, see the [User Guide](docs/USER_GUIDE.md).
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit pull requests.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Make your changes
+4. Commit your changes (`git commit -m 'Add some feature'`)
+5. Push to the branch (`git push origin feature/my-feature`)
+6. Create a new Pull Request
 
 ## License
 
-[MIT License](LICENSE)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
