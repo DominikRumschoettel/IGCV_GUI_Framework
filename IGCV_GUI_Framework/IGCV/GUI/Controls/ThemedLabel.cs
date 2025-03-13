@@ -18,6 +18,7 @@ namespace IGCV.GUI.Controls
         private Color _borderColor = Color.Transparent;
         private int _borderWidth = 0;
         private LabelStyle _labelStyle = LabelStyle.Default;
+        private LabelSize _labelSize = LabelSize.Normal;
         private bool _useGradientText = false;
         private Color _gradientTextStartColor = Color.Empty;
         private Color _gradientTextEndColor = Color.Empty;
@@ -123,6 +124,26 @@ namespace IGCV.GUI.Controls
         }
         
         /// <summary>
+        /// Gets or sets the label size
+        /// </summary>
+        [Category("Appearance")]
+        [Description("The predefined size for the label")]
+        [DefaultValue(LabelSize.Normal)]
+        public LabelSize LabelSize
+        {
+            get => _labelSize;
+            set
+            {
+                if (_labelSize != value)
+                {
+                    _labelSize = value;
+                    ApplyTheme();
+                    Invalidate();
+                }
+            }
+        }
+        
+        /// <summary>
         /// Gets or sets whether to use a gradient for the text
         /// </summary>
         [Category("Appearance")]
@@ -215,7 +236,6 @@ namespace IGCV.GUI.Controls
             {
                 case LabelStyle.Default:
                     ForeColor = theme.TextOnLightColor;
-                    Font = theme.BodyFont;
                     BackColor = Color.Transparent;
                     _borderWidth = 0;
                     break;
@@ -230,21 +250,18 @@ namespace IGCV.GUI.Controls
                 
                 case LabelStyle.Primary:
                     ForeColor = theme.PrimaryColor;
-                    Font = theme.BodyFont;
                     BackColor = Color.Transparent;
                     _borderWidth = 0;
                     break;
                 
                 case LabelStyle.Secondary:
                     ForeColor = theme.SecondaryColor;
-                    Font = theme.BodyFont;
                     BackColor = Color.Transparent;
                     _borderWidth = 0;
                     break;
                 
                 case LabelStyle.Accent:
                     ForeColor = theme.AccentColor;
-                    Font = theme.BodyFont;
                     BackColor = Color.Transparent;
                     _borderWidth = 0;
                     break;
@@ -252,7 +269,6 @@ namespace IGCV.GUI.Controls
                 case LabelStyle.Inverted:
                     BackColor = theme.TextOnLightColor;
                     ForeColor = Color.White;
-                    Font = theme.BodyFont;
                     _cornerRadius = 3;
                     Padding = new Padding(5);
                     _borderWidth = 0;
@@ -260,21 +276,18 @@ namespace IGCV.GUI.Controls
                 
                 case LabelStyle.Success:
                     ForeColor = theme.SuccessColor;
-                    Font = theme.BodyFont;
                     BackColor = Color.Transparent;
                     _borderWidth = 0;
                     break;
                 
                 case LabelStyle.Warning:
                     ForeColor = theme.WarningColor;
-                    Font = theme.BodyFont;
                     BackColor = Color.Transparent;
                     _borderWidth = 0;
                     break;
                 
                 case LabelStyle.Error:
                     ForeColor = theme.ErrorColor;
-                    Font = theme.BodyFont;
                     BackColor = Color.Transparent;
                     _borderWidth = 0;
                     break;
@@ -284,9 +297,36 @@ namespace IGCV.GUI.Controls
                     _gradientTextStartColor = theme.PrimaryColor;
                     _gradientTextEndColor = theme.SecondaryColor;
                     _gradientTextMode = LinearGradientMode.Horizontal;
-                    Font = theme.HeaderFont;
                     BackColor = Color.Transparent;
                     _borderWidth = 0;
+                    break;
+            }
+            
+            // Apply font size based on LabelSize
+            switch (_labelSize)
+            {
+                case LabelSize.XSmall:
+                    Font = theme.SmallFont;
+                    break;
+                
+                case LabelSize.Small:
+                    Font = new Font(theme.SmallFont.FontFamily, theme.SmallFont.Size + 1f);
+                    break;
+                
+                case LabelSize.Normal:
+                    Font = theme.BodyFont;
+                    break;
+                
+                case LabelSize.Medium:
+                    Font = theme.SubHeaderFont;
+                    break;
+                
+                case LabelSize.Large:
+                    Font = new Font(theme.SubHeaderFont.FontFamily, theme.SubHeaderFont.Size + 2f);
+                    break;
+                
+                case LabelSize.XLarge:
+                    Font = theme.HeaderFont;
                     break;
             }
         }
@@ -500,5 +540,24 @@ namespace IGCV.GUI.Controls
         Error,
         /// <summary>Text with gradient effect</summary>
         GradientText
+    }
+    
+    /// <summary>
+    /// Predefined label sizes
+    /// </summary>
+    public enum LabelSize
+    {
+        /// <summary>Extra small text</summary>
+        XSmall,
+        /// <summary>Small text</summary>
+        Small,
+        /// <summary>Normal text size</summary>
+        Normal,
+        /// <summary>Medium text size</summary>
+        Medium,
+        /// <summary>Large text size</summary>
+        Large,
+        /// <summary>Extra large text size</summary>
+        XLarge
     }
 }

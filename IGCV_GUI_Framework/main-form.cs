@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
+using IGCV.GUI.Controls;
+using IGCV.GUI.Themes;
 using IGCV_GUI_Framework.Common;
 using IGCV_GUI_Framework.Common.Controls;
 using IGCV_GUI_Framework.Interfaces;
@@ -14,9 +16,10 @@ namespace IGCV_GUI_Framework
     public class MainForm : Form
     {
         // Main UI components
-        private NavigationBar _navigationBar;
+        private ThemedFooterBar _footerBar;
         private StatusPanel _statusPanel;
         private PageContainer _pageContainer;
+        private ThemedNavigationMenu _topMenu;
 
         // Pages collection
         private List<IModulePage> _pages = new List<IModulePage>();
@@ -34,88 +37,62 @@ namespace IGCV_GUI_Framework
                          ControlStyles.AllPaintingInWmPaint |
                          ControlStyles.UserPaint, true);
 
-            // Initialize components (designer-generated code)
-            InitializeComponent();
+            // Initialize theme system
+            ThemeManager.SetTheme("Fraunhofer CI");
 
-            // *** IMPORTANT: Force recreation of PageContainer after designer initialization ***
-            ForceRecreatePageContainer();
+            // Initialize components
+            InitializeComponent();
 
             // Initialize pages
             InitializePages();
-        }
-
-        // Create a dedicated method to force recreation of the PageContainer
-        private void ForceRecreatePageContainer()
-        {
-            // Remove the designer-created PageContainer
-            if (_pageContainer != null)
-            {
-                this.Controls.Remove(_pageContainer);
-                _pageContainer.Dispose();
-            }
-
-            // Create a new PageContainer with the correct implementation
-            _pageContainer = new PageContainer();
-            _pageContainer.Dock = DockStyle.Fill;
-
-            // Add the recreated PageContainer to the form
-            // Important: Add it in the correct order - it should be added before StatusPanel
-            // so that StatusPanel appears on top
-            this.Controls.Add(_pageContainer);
-
-            // Fix control order - ensure proper z-order
-            this.Controls.SetChildIndex(_pageContainer, 0);  // Bottom-most
-            this.Controls.SetChildIndex(_statusPanel, 1);    // Middle
-            this.Controls.SetChildIndex(_navigationBar, 2);  // Top-most
+            
+            // Apply theme to all controls
+            ThemeManager.ApplyThemeToContainer(this);
         }
 
         private void InitializeComponent()
         {
-            _navigationBar = new NavigationBar();
+            // Create status panel
             _statusPanel = new StatusPanel();
-            _pageContainer = new PageContainer();
-            SuspendLayout();
-            // 
-            // _navigationBar
-            // 
-            _navigationBar.BackColor = Color.FromArgb(240, 240, 240);
-            _navigationBar.Dock = DockStyle.Bottom;
-            _navigationBar.Location = new Point(0, 773);
-            _navigationBar.Name = "_navigationBar";
-            _navigationBar.Size = new Size(1582, 80);
-            _navigationBar.TabIndex = 2;
-            _navigationBar.PageSelected += NavigationBar_PageSelected;
-            // 
-            // _statusPanel
-            // 
-            _statusPanel.BackColor = Color.FromArgb(20, 60, 100);
             _statusPanel.Dock = DockStyle.Left;
-            _statusPanel.Location = new Point(0, 0);
-            _statusPanel.Name = "_statusPanel";
-            _statusPanel.Size = new Size(220, 773);
-            _statusPanel.TabIndex = 1;
-            // 
-            // _pageContainer
-            // 
-            _pageContainer.BackColor = Color.Transparent;
-            _pageContainer.Location = new Point(0, 0);
-            _pageContainer.Name = "_pageContainer";
-            _pageContainer.Size = new Size(1396, 584);
-            _pageContainer.TabIndex = 0;
-            // 
-            // MainForm
-            // 
-            ClientSize = new Size(1582, 853);
-            Controls.Add(_pageContainer);
-            Controls.Add(_statusPanel);
-            Controls.Add(_navigationBar);
-            MinimumSize = new Size(800, 600);
-            Name = "MainForm";
-            StartPosition = FormStartPosition.CenterScreen;
-            Text = "IGCV GUI Framework Demo";
-            Paint += MainForm_Paint;
-            Resize += MainForm_Resize;
-            ResumeLayout(false);
+            _statusPanel.Width = 220;
+            
+            // Create page container
+            _pageContainer = new PageContainer();
+            _pageContainer.Dock = DockStyle.Fill;
+            
+            // Create top menu
+            _topMenu = new ThemedNavigationMenu();
+            _topMenu.Height = 40;
+            _topMenu.Dock = DockStyle.Top;
+            _topMenu.MenuBackColor = Color.FromArgb(235, 235, 235);
+            _topMenu.BorderWidth = 0;
+            _topMenu.MenuItemSelected += TopMenu_MenuItemSelected;
+            
+            // Create footer bar
+            _footerBar = new ThemedFooterBar();
+            _footerBar.Dock = DockStyle.Bottom;
+            _footerBar.Height = 60;
+            _footerBar.LogoText = "Fraunhofer";
+            _footerBar.SubLogoText = "IGCV";
+            _footerBar.NavigationButtonClicked += FooterBar_NavigationButtonClicked;
+            
+            // Add controls to form
+            this.SuspendLayout();
+            
+            this.Controls.Add(_pageContainer);
+            this.Controls.Add(_statusPanel);
+            this.Controls.Add(_topMenu);
+            this.Controls.Add(_footerBar);
+            
+            // Form properties
+            this.MinimumSize = new Size(800, 600);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "IGCV GUI Framework Demo";
+            this.Paint += MainForm_Paint;
+            this.Resize += MainForm_Resize;
+            
+            this.ResumeLayout(false);
         }
 
         private void InitializePages()
@@ -142,8 +119,11 @@ namespace IGCV_GUI_Framework
             _pages.Add(new SamplePage("Vision", "Get sensor data and camera controls", "Vision",
                                     placeholderImage, 4));
 
-            // Set up navigation bar
-            _navigationBar.SetPages(_pages);
+            // Set navigation menu items
+            _topMenu.SetMenuItems(new[] { "Demo Launcher", "Controls Demo", "Integration Demo" });
+            
+            // Set footer navigation buttons
+            _footerBar.SetNavigationButtons(_pages.Select(p => p.NavigationName));
 
             // Start with main menu
             ShowPage(0);
@@ -151,8 +131,8 @@ namespace IGCV_GUI_Framework
 
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
-            // Draw gradient background
-            FraunhoferTheme.ApplyGradientBackground(this, e);
+            // Draw gradient background using the theme system
+            ThemeManager.CurrentTheme.ApplyGradientBackground(e, this.ClientRectangle);
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
@@ -161,9 +141,26 @@ namespace IGCV_GUI_Framework
             Invalidate();
         }
 
-        private void NavigationBar_PageSelected(object sender, int pageIndex)
+        private void FooterBar_NavigationButtonClicked(object sender, int pageIndex)
         {
             ShowPage(pageIndex);
+        }
+        
+        private void TopMenu_MenuItemSelected(object sender, int index)
+        {
+            // Handle top menu item selections
+            switch (index)
+            {
+                case 0: // Demo Launcher
+                    ShowPage(0); // Main menu/demo launcher
+                    break;
+                case 1: // Controls Demo
+                    ShowPage(1); // Axes page as control demo
+                    break;
+                case 2: // Integration Demo
+                    ShowPage(2); // Actuators page as integration demo
+                    break;
+            }
         }
 
         /// <summary>
@@ -176,9 +173,16 @@ namespace IGCV_GUI_Framework
             // Update current page index
             _currentPageIndex = pageIndex;
 
-            // Set the page without excessive redraws
+            // Set the page
             _pageContainer.SetPage(_pages[pageIndex]);
-            _navigationBar.SetActivePage(pageIndex);
+            
+            // Update navigation indicators
+            _footerBar.ActiveButtonIndex = pageIndex;
+            
+            // Update top menu selection based on page
+            if (pageIndex == 0) _topMenu.ActiveButtonIndex = 0;
+            else if (pageIndex == 1) _topMenu.ActiveButtonIndex = 1;
+            else if (pageIndex >= 2) _topMenu.ActiveButtonIndex = 2;
         }
 
         /// <summary>

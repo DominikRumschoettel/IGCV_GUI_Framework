@@ -2,47 +2,43 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using IGCV.GUI.Themes;
 
 namespace IGCV_GUI_Framework.Common
 {
     /// <summary>
-    /// Provides consistent styling for the Fraunhofer corporate identity
+    /// Provides consistent styling for the Fraunhofer corporate identity.
+    /// This is a legacy class that now acts as a wrapper around the new theme system.
     /// </summary>
+    [Obsolete("Use IGCV.GUI.Themes.ThemeManager and ITheme implementations instead. This class will be removed in a future version.")]
     public static class FraunhoferTheme
     {
-        // Fraunhofer corporate colors
-        public static Color PrimaryBlue = Color.FromArgb(0, 103, 172);      // Main blue
-        public static Color DarkBlue = Color.FromArgb(0, 67, 119);          // Dark blue for gradients
-        public static Color Teal = Color.FromArgb(0, 169, 169);             // Teal for gradients
-        public static Color Green = Color.FromArgb(0, 169, 132);            // Green for action buttons
-        public static Color DarkPanel = Color.FromArgb(0, 84, 129);         // Mid blue for panels
+        // Redirect colors to the new theme system
+        public static Color PrimaryBlue => ThemeManager.CurrentTheme.SecondaryColor;
+        public static Color DarkBlue => Color.FromArgb(0, 67, 119); // Map to IGCV.GUI.Themes.FraunhoferCI.FraunhoferTheme.SteelBlue
+        public static Color Teal => Color.FromArgb(0, 169, 169);    // Legacy color maintained for compatibility
+        public static Color Green => ThemeManager.CurrentTheme.PrimaryColor;
+        public static Color DarkPanel => Color.FromArgb(0, 84, 129); // Map to IGCV.GUI.Themes.FraunhoferCI.FraunhoferTheme.DarkPanelColor
         
         // UI Element colors
-        public static Color ButtonBackground = Color.FromArgb(230, 237, 243);   // Light gray-blue
-        public static Color FooterBackground = Color.FromArgb(240, 240, 240);   // Light gray
-        public static Color TextColor = Color.White;                            // White text on dark bg
-        public static Color DarkTextColor = Color.FromArgb(70, 70, 70);         // Dark text on light bg
+        public static Color ButtonBackground => Color.FromArgb(230, 237, 243);
+        public static Color FooterBackground => Color.FromArgb(240, 240, 240);
+        public static Color TextColor => ThemeManager.CurrentTheme.TextOnDarkColor;
+        public static Color DarkTextColor => ThemeManager.CurrentTheme.TextOnLightColor;
         
-        // Font definitions
-        public static Font HeaderFont = new Font("Segoe UI", 24F, FontStyle.Bold);
-        public static Font SubheaderFont = new Font("Segoe UI", 14F, FontStyle.Regular);
-        public static Font ButtonFont = new Font("Segoe UI", 10F, FontStyle.Regular);
-        public static Font ButtonFontBold = new Font("Segoe UI", 10F, FontStyle.Bold);
-        public static Font TileFont = new Font("Segoe UI", 12F, FontStyle.Bold);
+        // Font definitions - redirect to the new theme system
+        public static Font HeaderFont => ThemeManager.CurrentTheme.HeaderFont;
+        public static Font SubheaderFont => ThemeManager.CurrentTheme.SubHeaderFont;
+        public static Font ButtonFont => ThemeManager.CurrentTheme.ButtonFont;
+        public static Font ButtonFontBold => ThemeManager.CurrentTheme.ButtonFont; // Use standard button font
+        public static Font TileFont => new Font(ThemeManager.CurrentTheme.BodyFont.FontFamily, 12F, FontStyle.Bold);
         
         /// <summary>
         /// Applies the Fraunhofer gradient background to a form
         /// </summary>
         public static void ApplyGradientBackground(Form form, PaintEventArgs e)
         {
-            using (LinearGradientBrush brush = new LinearGradientBrush(
-                form.ClientRectangle,
-                DarkBlue,
-                Teal,
-                LinearGradientMode.Horizontal))
-            {
-                e.Graphics.FillRectangle(brush, form.ClientRectangle);
-            }
+            ThemeManager.CurrentTheme.ApplyGradientBackground(e, form.ClientRectangle);
         }
         
         /// <summary>
@@ -50,11 +46,7 @@ namespace IGCV_GUI_Framework.Common
         /// </summary>
         public static void StylePrimaryButton(Button button)
         {
-            button.FlatStyle = FlatStyle.Flat;
-            button.BackColor = Green;
-            button.ForeColor = TextColor;
-            button.Font = ButtonFontBold;
-            button.FlatAppearance.BorderSize = 0;
+            ThemeManager.CurrentTheme.ApplyPrimaryButtonStyle(button);
         }
         
         /// <summary>
@@ -62,11 +54,7 @@ namespace IGCV_GUI_Framework.Common
         /// </summary>
         public static void StyleSecondaryButton(Button button)
         {
-            button.FlatStyle = FlatStyle.Flat;
-            button.BackColor = ButtonBackground;
-            button.ForeColor = DarkTextColor;
-            button.Font = ButtonFont;
-            button.FlatAppearance.BorderSize = 0;
+            ThemeManager.CurrentTheme.ApplySecondaryButtonStyle(button);
         }
         
         /// <summary>
@@ -74,12 +62,9 @@ namespace IGCV_GUI_Framework.Common
         /// </summary>
         public static Panel CreateDarkPanel(int x, int y, int width, int height)
         {
-            return new Panel
-            {
-                Location = new Point(x, y),
-                Size = new Size(width, height),
-                BackColor = DarkPanel
-            };
+            Panel panel = ThemeManager.CurrentTheme.CreatePanel(new Point(x, y), new Size(width, height));
+            ThemeManager.CurrentTheme.ApplyPanelStyle(panel);
+            return panel;
         }
         
         /// <summary>
@@ -87,14 +72,8 @@ namespace IGCV_GUI_Framework.Common
         /// </summary>
         public static Label CreateHeaderLabel(string text, int x, int y)
         {
-            return new Label
-            {
-                Text = text,
-                AutoSize = true,
-                Font = HeaderFont,
-                ForeColor = TextColor,
-                Location = new Point(x, y)
-            };
+            Label label = ThemeManager.CurrentTheme.CreateHeaderLabel(text, new Point(x, y));
+            return label;
         }
         
         /// <summary>
@@ -102,14 +81,8 @@ namespace IGCV_GUI_Framework.Common
         /// </summary>
         public static Label CreateSubheaderLabel(string text, int x, int y)
         {
-            return new Label
-            {
-                Text = text,
-                AutoSize = true,
-                Font = SubheaderFont,
-                ForeColor = TextColor,
-                Location = new Point(x, y)
-            };
+            Label label = ThemeManager.CurrentTheme.CreateSubHeaderLabel(text, new Point(x, y));
+            return label;
         }
         
         /// <summary>
@@ -118,7 +91,8 @@ namespace IGCV_GUI_Framework.Common
         public static void DrawStatusLight(PaintEventArgs e, bool isActive)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            using (SolidBrush brush = new SolidBrush(isActive ? Color.LimeGreen : Color.Red))
+            using (SolidBrush brush = new SolidBrush(isActive ? 
+                  ThemeManager.CurrentTheme.SuccessColor : ThemeManager.CurrentTheme.ErrorColor))
             {
                 e.Graphics.FillEllipse(brush, 0, 0, 30, 30);
             }

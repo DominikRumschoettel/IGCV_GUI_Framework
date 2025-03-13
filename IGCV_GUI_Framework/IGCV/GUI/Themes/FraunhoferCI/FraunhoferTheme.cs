@@ -106,7 +106,7 @@ namespace IGCV.GUI.Themes.FraunhoferCI
         #region Color Properties
         
         // Primary Colors from the Fraunhofer CI
-        public override Color PrimaryColor => Color.FromArgb(23, 156, 125);   // Fraunhofer Green (#179c7d)
+        public override Color PrimaryColor => Color.FromArgb(0, 156, 125);   // Fraunhofer Green (#009c7d)
         public Color SteelBlue => Color.FromArgb(0, 67, 119);                // Dark Steel Blue (#004377) - for gradients
         public Color SilverGrey => Color.FromArgb(166, 187, 200);            // Silver Grey (#a6bbc8) - original
         public Color DarkSidebarColor => Color.FromArgb(13, 45, 80);          // Dark blue for sidebar (#0d2d50)
@@ -170,6 +170,11 @@ namespace IGCV.GUI.Themes.FraunhoferCI
             button.ForeColor = TextOnDarkColor;
             button.Font = ButtonFontBold;
             button.FlatAppearance.BorderSize = 0;
+            button.Cursor = Cursors.Hand;
+            
+            // Add mouse over effect
+            button.FlatAppearance.MouseOverBackColor = ControlPaint.Light(PrimaryColor);
+            button.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(PrimaryColor);
             
             // Apply corner radius if supported by the control
             if (button is IThemeableControl themeableButton)
@@ -190,6 +195,37 @@ namespace IGCV.GUI.Themes.FraunhoferCI
             button.ForeColor = TextOnLightColor;
             button.Font = ButtonFont;
             button.FlatAppearance.BorderSize = 0;
+            button.Cursor = Cursors.Hand;
+            
+            // Add mouse over effect
+            button.FlatAppearance.MouseOverBackColor = ControlPaint.Light(button.BackColor);
+            button.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(button.BackColor);
+            
+            // Apply corner radius if supported by the control
+            if (button is IThemeableControl themeableButton)
+            {
+                themeableButton.CornerRadius = CornerRadius;
+            }
+        }
+        
+        /// <summary>
+        /// Apply the theme's tertiary/text button style
+        /// </summary>
+        public override void ApplyTertiaryButtonStyle(Button button)
+        {
+            if (button == null) return;
+            
+            button.FlatStyle = FlatStyle.Flat;
+            button.BackColor = Color.Transparent;
+            button.ForeColor = TextOnDarkColor; // Use white text for better visibility
+            button.Font = ButtonFont;
+            button.FlatAppearance.BorderSize = 1;
+            button.FlatAppearance.BorderColor = Color.FromArgb(100, 255, 255, 255); // Semi-transparent white border
+            button.Cursor = Cursors.Hand;
+            
+            // Add mouse over effect
+            button.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 255, 255, 255);
+            button.FlatAppearance.MouseDownBackColor = Color.FromArgb(50, 255, 255, 255);
             
             // Apply corner radius if supported by the control
             if (button is IThemeableControl themeableButton)
@@ -207,10 +243,20 @@ namespace IGCV.GUI.Themes.FraunhoferCI
             
             using (LinearGradientBrush brush = new LinearGradientBrush(
                 bounds,
-                Color.FromArgb(0, 67, 119),    // Dark Steel Blue for gradient
-                Color.FromArgb(0, 122, 159),   // Header Blue
-                LinearGradientMode.Vertical))
+                SteelBlue,    // Dark Steel Blue (#004377)
+                Color.FromArgb(0, 133, 152),   // Petrol (#008598)
+                LinearGradientMode.Horizontal))
             {
+                // Add a color blend for smoother transition
+                ColorBlend blend = new ColorBlend(3);
+                blend.Colors = new Color[] { 
+                    SteelBlue,
+                    Color.FromArgb(0, 103, 140),  // Mid-blue
+                    Color.FromArgb(0, 133, 152)   // Petrol
+                };
+                blend.Positions = new float[] { 0.0f, 0.5f, 1.0f };
+                brush.InterpolationColors = blend;
+                
                 e.Graphics.FillRectangle(brush, bounds);
             }
         }
@@ -233,6 +279,51 @@ namespace IGCV.GUI.Themes.FraunhoferCI
             }
         }
         
+        /// <summary>
+        /// Apply the theme's label style for headers that ensures text is visible
+        /// </summary>
+        public override void ApplyHeaderLabelStyle(Label label)
+        {
+            if (label == null) return;
+            
+            label.Font = HeaderFont;
+            label.ForeColor = TextOnDarkColor; // Always use white text for headers on dark backgrounds
+            label.AutoSize = true;
+            label.BackColor = Color.Transparent;
+        }
+        
+        /// <summary>
+        /// Apply the theme's label style for subheaders that ensures text is visible
+        /// </summary>
+        public override void ApplySubHeaderLabelStyle(Label label)
+        {
+            if (label == null) return;
+            
+            label.Font = SubHeaderFont;
+            label.ForeColor = TextOnDarkColor; // Always use white text for subheaders on dark backgrounds
+            label.AutoSize = true;
+            label.BackColor = Color.Transparent;
+        }
+        
+        /// <summary>
+        /// Apply the theme's text box style with clear visibility
+        /// </summary>
+        public override void ApplyTextBoxStyle(TextBox textBox)
+        {
+            if (textBox == null) return;
+            
+            textBox.BorderStyle = BorderStyle.FixedSingle;
+            textBox.Font = BodyFont;
+            textBox.BackColor = Color.White;
+            textBox.ForeColor = TextOnLightColor;
+            
+            // Apply corner radius if supported by the control
+            if (textBox is IThemeableControl themeableTextBox)
+            {
+                themeableTextBox.CornerRadius = CornerRadius;
+            }
+        }
+        
         #endregion
         
         #region Fraunhofer-Specific Methods
@@ -251,13 +342,48 @@ namespace IGCV.GUI.Themes.FraunhoferCI
             
             statusLight.Paint += (s, e) => {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                
+                // Draw outer glow effect
+                using (GraphicsPath path = new GraphicsPath())
+                {
+                    path.AddEllipse(1, 1, 28, 28);
+                    
+                    using (PathGradientBrush brush = new PathGradientBrush(path))
+                    {
+                        Color centerColor = isActive ? SuccessColor : ErrorColor;
+                        Color surroundColor = Color.FromArgb(30, centerColor);
+                        
+                        brush.CenterColor = centerColor;
+                        brush.SurroundColors = new Color[] { surroundColor };
+                        
+                        e.Graphics.FillPath(brush, path);
+                    }
+                }
+                
+                // Draw main circle
                 using (SolidBrush brush = new SolidBrush(isActive ? SuccessColor : ErrorColor))
                 {
-                    e.Graphics.FillEllipse(brush, 0, 0, 30, 30);
+                    e.Graphics.FillEllipse(brush, 4, 4, 22, 22);
                 }
-                using (Pen pen = new Pen(Color.Gray, 1))
+                
+                // Draw highlight for 3D effect
+                using (GraphicsPath highlightPath = new GraphicsPath())
                 {
-                    e.Graphics.DrawEllipse(pen, 0, 0, 30, 30);
+                    highlightPath.AddEllipse(8, 8, 10, 10);
+                    
+                    using (PathGradientBrush highlightBrush = new PathGradientBrush(highlightPath))
+                    {
+                        highlightBrush.CenterColor = Color.FromArgb(150, 255, 255, 255);
+                        highlightBrush.SurroundColors = new Color[] { Color.FromArgb(0, 255, 255, 255) };
+                        
+                        e.Graphics.FillPath(highlightBrush, highlightPath);
+                    }
+                }
+                
+                // Draw border
+                using (Pen pen = new Pen(Color.FromArgb(100, 0, 0, 0), 1))
+                {
+                    e.Graphics.DrawEllipse(pen, 4, 4, 22, 22);
                 }
             };
             
@@ -279,8 +405,14 @@ namespace IGCV.GUI.Themes.FraunhoferCI
                 ForeColor = isActive ? TextOnDarkColor : TextOnLightColor,
                 Font = ButtonFont,
                 TextAlign = ContentAlignment.MiddleLeft,
-                FlatAppearance = { BorderSize = 0 }
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand
             };
+            
+            // Add mouse over effect
+            button.FlatAppearance.MouseOverBackColor = isActive ? 
+                ControlPaint.Light(SteelBlue) : 
+                Color.FromArgb(210, 220, 230);
             
             return button;
         }
@@ -348,6 +480,50 @@ namespace IGCV.GUI.Themes.FraunhoferCI
             };
             
             return panel;
+        }
+        
+        /// <summary>
+        /// Creates a navigation bar button with proper styling
+        /// </summary>
+        public Button CreateNavigationBarButton(string text, Point location, Size size, bool isActive = false)
+        {
+            Button button = new Button
+            {
+                Text = text,
+                Location = location,
+                Size = size,
+                FlatStyle = FlatStyle.Flat,
+                Font = ButtonFont,
+                Cursor = Cursors.Hand,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            
+            if (isActive)
+            {
+                button.BackColor = Color.FromArgb(0, 120, 215);
+                button.ForeColor = TextOnDarkColor;
+                button.FlatAppearance.BorderSize = 0;
+            }
+            else
+            {
+                button.BackColor = Color.FromArgb(240, 240, 240);
+                button.ForeColor = TextOnLightColor;
+                button.FlatAppearance.BorderSize = 1;
+                button.FlatAppearance.BorderColor = Color.FromArgb(210, 210, 210);
+            }
+            
+            // Add mouse over effect
+            button.FlatAppearance.MouseOverBackColor = isActive ? 
+                ControlPaint.Light(button.BackColor) : 
+                Color.FromArgb(220, 230, 240);
+            
+            // Apply corner radius if supported by the control
+            if (button is IThemeableControl themeableButton)
+            {
+                themeableButton.CornerRadius = 0; // Keep these buttons square for navigation bar
+            }
+            
+            return button;
         }
         
         #endregion

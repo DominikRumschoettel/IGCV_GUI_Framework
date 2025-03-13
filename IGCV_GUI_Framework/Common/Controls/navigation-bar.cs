@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using IGCV.GUI.Controls;
+using IGCV.GUI.Themes;
 using IGCV_GUI_Framework.Interfaces;
 
 namespace IGCV_GUI_Framework.Common.Controls
@@ -48,7 +50,7 @@ namespace IGCV_GUI_Framework.Common.Controls
             // Set control properties
             this.Dock = DockStyle.Bottom;
             this.Height = NAV_HEIGHT;
-            this.BackColor = FraunhoferTheme.FooterBackground;
+            this.BackColor = Color.FromArgb(240, 240, 240); // Light gray background
             
             // Create status light
             _statusLight = new Panel
@@ -60,7 +62,8 @@ namespace IGCV_GUI_Framework.Common.Controls
             };
             _statusLight.Paint += (s, e) => {
                 e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                using (SolidBrush brush = new SolidBrush(_activePageIndex >= 0 ? Color.LimeGreen : Color.Red))
+                using (SolidBrush brush = new SolidBrush(_activePageIndex >= 0 ? 
+                      ThemeManager.CurrentTheme.SuccessColor : ThemeManager.CurrentTheme.ErrorColor))
                 {
                     e.Graphics.FillEllipse(brush, 0, 0, 30, 30);
                 }
@@ -94,7 +97,7 @@ namespace IGCV_GUI_Framework.Common.Controls
             // Create active indicator
             _activeIndicator = new Panel
             {
-                BackColor = FraunhoferTheme.Green,
+                BackColor = ThemeManager.CurrentTheme.PrimaryColor,
                 Size = new Size(INDICATOR_WIDTH, BUTTON_HEIGHT),
                 Location = new Point(0, 20),
             };
@@ -112,6 +115,24 @@ namespace IGCV_GUI_Framework.Common.Controls
             
             // Initial positioning
             UpdateControlPositions();
+            
+            // Register for theme changes
+            ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
+        }
+        
+        private void ThemeManager_ThemeChanged(object sender, EventArgs e)
+        {
+            // Update colors when theme changes
+            _activeIndicator.BackColor = ThemeManager.CurrentTheme.PrimaryColor;
+            
+            // Update button styles
+            foreach (var button in _navButtons)
+            {
+                ThemeManager.CurrentTheme.ApplySecondaryButtonStyle(button);
+            }
+            
+            // Refresh the status light
+            _statusLight.Invalidate();
         }
         
         private void NavigationBar_Resize(object sender, EventArgs e)
@@ -178,14 +199,17 @@ namespace IGCV_GUI_Framework.Common.Controls
                 var page = orderedPages[i];
                 int pageIndex = i; // Index in the pages collection
                 
-                Button button = new Button
+                // Create ThemedButton instead of standard Button
+                ThemedButton button = new ThemedButton
                 {
                     Text = page.NavigationName,
                     TabIndex = i + 1,
-                    Anchor = AnchorStyles.Bottom | AnchorStyles.Left
+                    Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
+                    ButtonStyle = ButtonStyle.Secondary
                 };
                 
-                FraunhoferTheme.StyleSecondaryButton(button);
+                // Apply theme
+                button.ApplyTheme();
                 
                 // Add click handler
                 button.Click += (s, e) => OnPageSelected(pageIndex);
@@ -234,6 +258,16 @@ namespace IGCV_GUI_Framework.Common.Controls
             _activePageIndex = pageIndex;
             UpdateActiveIndicator();
             PageSelected?.Invoke(this, pageIndex);
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Unregister from theme changed event
+                ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged;
+            }
+            base.Dispose(disposing);
         }
     }
 }

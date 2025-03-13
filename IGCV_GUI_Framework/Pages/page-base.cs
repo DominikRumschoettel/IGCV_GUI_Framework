@@ -1,7 +1,8 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using IGCV_GUI_Framework.Common;
+using IGCV.GUI.Controls;
+using IGCV.GUI.Themes;
 using IGCV_GUI_Framework.Interfaces;
 
 namespace IGCV_GUI_Framework.Pages
@@ -83,16 +84,21 @@ namespace IGCV_GUI_Framework.Pages
         }
 
         /// <summary>
-        /// Creates a standard panel with the Fraunhofer dark panel style
+        /// Creates a standard panel with the themed panel style
         /// </summary>
         protected Panel CreateStandardPanel(int x, int y, int width, int height)
         {
-            return new Panel
+            // Create a ThemedPanel instead of regular Panel
+            ThemedPanel panel = new ThemedPanel
             {
                 Location = new Point(x, y),
-                Size = new Size(width, height),
-                BackColor = FraunhoferTheme.DarkPanel
+                Size = new Size(width, height)
             };
+            
+            // Apply theme
+            panel.ApplyTheme();
+            
+            return panel;
         }
 
         /// <summary>
@@ -100,15 +106,16 @@ namespace IGCV_GUI_Framework.Pages
         /// </summary>
         protected Label CreateSectionHeader(string text, int x, int y)
         {
-            Label header = new Label
+            // Create a ThemedLabel instead
+            ThemedLabel header = new ThemedLabel
             {
                 Text = text,
-                Font = new Font("Segoe UI", 12f, FontStyle.Bold),
-                ForeColor = FraunhoferTheme.TextColor,
                 AutoSize = true,
                 Location = new Point(x, y)
             };
-
+            
+            // Apply theme
+            header.ApplyTheme();
             return header;
         }
 
@@ -117,14 +124,18 @@ namespace IGCV_GUI_Framework.Pages
         /// </summary>
         protected Button CreatePrimaryButton(string text, int x, int y, int width, int height)
         {
-            Button button = new Button
+            // Create a ThemedButton with primary style
+            ThemedButton button = new ThemedButton
             {
                 Text = text,
                 Size = new Size(width, height),
-                Location = new Point(x, y)
+                Location = new Point(x, y),
+                ButtonStyle = ButtonStyle.Primary
             };
-
-            FraunhoferTheme.StylePrimaryButton(button);
+            
+            // Apply theme
+            button.ApplyTheme();
+            
             return button;
         }
 
@@ -133,14 +144,18 @@ namespace IGCV_GUI_Framework.Pages
         /// </summary>
         protected Button CreateSecondaryButton(string text, int x, int y, int width, int height)
         {
-            Button button = new Button
+            // Create a ThemedButton with secondary style
+            ThemedButton button = new ThemedButton
             {
                 Text = text,
                 Size = new Size(width, height),
-                Location = new Point(x, y)
+                Location = new Point(x, y),
+                ButtonStyle = ButtonStyle.Secondary
             };
-
-            FraunhoferTheme.StyleSecondaryButton(button);
+            
+            // Apply theme
+            button.ApplyTheme();
+            
             return button;
         }
     }

@@ -1,6 +1,8 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using IGCV.GUI.Controls;
+using IGCV.GUI.Themes;
 using IGCV_GUI_Framework.Interfaces;
 
 namespace IGCV_GUI_Framework.Common.Controls
@@ -43,15 +45,16 @@ namespace IGCV_GUI_Framework.Common.Controls
             this.Width = 220;
             this.BackColor = Color.FromArgb(20, 60, 100); // Darker blue for left panel
             
-            // Create status header
-            Label statusHeader = new Label
+            // Create status header using ThemedLabel
+            ThemedLabel statusHeader = new ThemedLabel
             {
                 Text = "System Status",
-                Font = new Font("Segoe UI", 14f, FontStyle.Bold),
-                ForeColor = FraunhoferTheme.TextColor,
                 Location = new Point(20, 30),
-                AutoSize = true
+                AutoSize = true,
+                LabelSize = LabelSize.Large,
+                ForeColor = ThemeManager.CurrentTheme.TextOnDarkColor
             };
+            statusHeader.ApplyTheme();
             
             // Create status light
             _statusLight = new Panel
@@ -61,13 +64,22 @@ namespace IGCV_GUI_Framework.Common.Controls
                 BackColor = Color.Transparent
             };
             _statusLight.Paint += (s, e) => {
-                FraunhoferTheme.DrawStatusLight(e, _printerController?.IsConnected ?? false);
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                using (SolidBrush brush = new SolidBrush((_printerController?.IsConnected ?? false) ? 
+                      ThemeManager.CurrentTheme.SuccessColor : ThemeManager.CurrentTheme.ErrorColor))
+                {
+                    e.Graphics.FillEllipse(brush, 0, 0, 30, 30);
+                }
+                using (Pen pen = new Pen(Color.Gray, 1))
+                {
+                    e.Graphics.DrawEllipse(pen, 0, 0, 30, 30);
+                }
             };
             
             // Create header underline
             Panel underline = new Panel
             {
-                BackColor = FraunhoferTheme.Green,
+                BackColor = ThemeManager.CurrentTheme.PrimaryColor,
                 Location = new Point(20, 60),
                 Height = 2,
                 Width = 180
@@ -97,22 +109,24 @@ namespace IGCV_GUI_Framework.Common.Controls
             _systemStatusValue = CreateStatusValueLabel("Idle", 120, yPos);
             yPos += spacing;
             
-            // Create action buttons
-            Button connectButton = new Button
+            // Create action buttons using ThemedButtons
+            ThemedButton connectButton = new ThemedButton
             {
                 Text = "Connect",
                 Size = new Size(180, 40),
-                Location = new Point(20, yPos + 20)
+                Location = new Point(20, yPos + 20),
+                ButtonStyle = ButtonStyle.Primary
             };
-            FraunhoferTheme.StylePrimaryButton(connectButton);
+            connectButton.ApplyTheme();
             
-            Button settingsButton = new Button
+            ThemedButton settingsButton = new ThemedButton
             {
                 Text = "Settings",
                 Size = new Size(180, 40),
-                Location = new Point(20, yPos + 70)
+                Location = new Point(20, yPos + 70),
+                ButtonStyle = ButtonStyle.Secondary
             };
-            FraunhoferTheme.StyleSecondaryButton(settingsButton);
+            settingsButton.ApplyTheme();
             
             // Add controls
             this.Controls.Add(statusHeader);
@@ -142,36 +156,61 @@ namespace IGCV_GUI_Framework.Common.Controls
                 }
             };
             
+            // Register for theme changes
+            ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
+            
             this.ResumeLayout(false);
+        }
+        
+        private void ThemeManager_ThemeChanged(object sender, EventArgs e)
+        {
+            // Update colors when theme changes
+            foreach (Control control in this.Controls)
+            {
+                if (control is ThemedButton button)
+                {
+                    button.ApplyTheme();
+                }
+                else if (control is ThemedLabel label)
+                {
+                    label.ApplyTheme();
+                }
+                else if (control is Panel panel && panel.Height == 2) // The underline
+                {
+                    panel.BackColor = ThemeManager.CurrentTheme.PrimaryColor;
+                }
+            }
+            
+            // Refresh the status light
+            _statusLight.Invalidate();
         }
         
         private Label CreateStatusLabel(string text, int x, int y)
         {
-            Label label = new Label
+            ThemedLabel label = new ThemedLabel
             {
                 Text = text,
-                Font = new Font("Segoe UI", 10f, FontStyle.Regular),
-                ForeColor = FraunhoferTheme.TextColor,
                 Location = new Point(x, y),
-                AutoSize = true
+                AutoSize = true,
+                ForeColor = ThemeManager.CurrentTheme.TextOnDarkColor
             };
             
-            this.Controls.Add(label);
+            label.ApplyTheme();
             return label;
         }
         
         private Label CreateStatusValueLabel(string text, int x, int y)
         {
-            Label label = new Label
+            ThemedLabel label = new ThemedLabel
             {
                 Text = text,
-                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                ForeColor = Color.White,
                 Location = new Point(x, y),
-                AutoSize = true
+                AutoSize = true,
+                Font = new Font(ThemeManager.CurrentTheme.BodyFont, FontStyle.Bold),
+                ForeColor = Color.White
             };
             
-            this.Controls.Add(label);
+            label.ApplyTheme();
             return label;
         }
         
@@ -233,6 +272,16 @@ namespace IGCV_GUI_Framework.Common.Controls
         {
             // Update connection status when the controller reports a change
             UpdateConnectionStatus();
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Unregister from theme changed event
+                ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged;
+            }
+            base.Dispose(disposing);
         }
     }
 }
