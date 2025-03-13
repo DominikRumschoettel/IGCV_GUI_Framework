@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+    <Folder Include="Properties\" />
+    <Folder Include="IGCV\GUI\Controls\" />
+    <Folder Include="IGCV\GUI\Themes\" />
+    <Folder Include="IGCV\GUI\Themes\FraunhoferCI\" />
+    <Folder Include="IGCV\GUI\Themes\DarkTheme\" />
+    <Folder Include="IGCV\GUI\Demo\" />
+  </ItemGroup>
+
+</Project>
